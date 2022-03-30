@@ -25,18 +25,57 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+
+#Get all members
 @app.route('/members', methods=['GET'])
 def handle_hello():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
-
-
+    response_body = members
     return jsonify(response_body), 200
+
+#Add a member
+@app.route('/member', methods=['POST'])
+def add_member():
+    member = request.json
+
+    if member:
+        jackson_family.add_member(member)
+        return jsonify({"msg":"New member added"}), 200
+    else:
+        return jsonify({"msg":"Could not add member"}), 400
+  
+#Delete a member  
+@app.route('/member/<int:id>', methods=['DELETE'])
+def delete_member(id):
+    member = jackson_family.delete_member(id)
+    if member:
+        print("Deleted")
+        response = {
+            "done": True
+        }
+        return jsonify(response), 200
+    else:
+        return jsonify({"Msg":"Invalid member"}), 401
+
+#Get a member
+@app.route('/member/<int:id>', methods=['GET'])
+def get_member(id):
+    member = jackson_family.get_member(id)
+    if member:
+        return jsonify(member), 200
+    else:
+        return jsonify({"Msg":"Invalid member"}), 401
+
+#Modify member
+@app.route('/updatemember/<int:id>', methods=['PUT'])
+def update_member(id):
+    member = request.json
+    if not member:
+        return jsonify({"Msg":"Invalid member"}), 401
+    jackson_family.update_member(id, member)
+    return jsonify(member)
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
